@@ -1,0 +1,378 @@
+<html>
+<head>
+<meta http-equiv="copyright" content="1996-99, Agustin Froufe">
+<meta http-equiv="reply-to" content="froufe@arrakis.es">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="autor" content="Agustin Froufe">
+<meta name="description" content="Tutorial de Java para Principiantes basado en el JDK de Sun">
+<meta name="keywords" content="java, tutorial, manual, awt, jdk, jdbc">
+<title>Tutorial de Java - Aproximación a JDBC</title>
+<link rel="stylesheet" href="../imagenes/tutorial.css" type="text/css">
+</head>
+
+<BODY>
+<!-- Spidersoft WebZIP Ad Banner Insert -->
+<TABLE width=100% border="0" cellpadding="0" cellspacing="0">
+<TR>
+<TD>
+<ILAYER id=ad1 visibility=hidden height=60></ILAYER>
+<NOLAYER>
+<IFRAME SRC="http://www.spidersoft.com/ads/bwz468_60.htm" width="100%" height="60" marginwidth=0 marginheight=0 hspace=0 vspace=0 frameborder=0 scrolling=no></IFRAME>
+</NOLAYER>
+</TD>
+</TR>
+</TABLE>
+<!-- End of Spidersoft WebZIP Ad Banner Insert-->
+
+<!-- Menú de la parte superior de la página ------------------------------------------------->
+
+<table align="center" border="0" width="690">
+  <tr>
+    <td width="684"><MAP NAME="mapa"><AREA SHAPE="RECT" COORDS="8, 16, 588, 40" HREF="../index.html">
+	<AREA SHAPE="RECT" COORDS="594, 5, 631, 50" HREF="http://java.sun.com"></MAP>
+	<img ismap usemap="#mapa" border="0" height="60" alt="Tutorial de Java" src="../imagenes/BarraSuperior.gif" width="681"></td>
+  </tr>
+  <tr>
+    <td width="684"><p align="center"><font class="titulo">
+	Aproximación a JDBC</font></td>
+  </tr>
+  <tr>
+    <td width="684"><font class="indice">
+	<a href="cap21-3.html" onmouseover="window.status='P&aacute;gina Anterior del Tutorial'; return true">Anterior</a> | 
+	<a href="cap21-5.html" onmouseover="window.status='P&aacute;gina Siguiente del Tutorial'; return true">Siguiente</font></a></td>
+  </tr>
+</table>
+<!-- Texto de cuerpo de la página ----------------------------------------------------------->
+
+<table align="center" border="0" width="690">
+  <tr><td><FONT class="normal">
+
+<P>JDBC define ocho interfaces para operaciones con bases de datos, de las que se derivan las clases correspondientes. La figura siguiente, en formato OMT, con nomenclatura UML, muestra la interrelaci&oacute;n entre estas clases seg&uacute;n el modelo de objetos de la especificaci&oacute;n de JDBC.</P>
+
+<p align="center"><img src="cap21-11.gif" width="498" height="588"></p>
+<P>La clase que se encarga de cargar inicialmente todos los drivers JDBC disponibles es <B>DriverManager</B>. Una aplicaci&oacute;n puede utilizar <B>DriverManager</B> para obtener un objeto de tipo conexi&oacute;n, <B>Connection</B>, con una base de datos. La conexi&oacute;n se especifica siguiendo una sintaxis basada en la especificaci&oacute;n m&aacute;s amplia de los URL, de la forma  </P>
+
+<I><P>jdbc:subprotocolo//servidor:puerto/base de datos</I>  </P>
+
+<P>Por ejemplo, si se utiliza mSQL el nombre del subprotocolo ser&aacute; <B>msql</B>. En algunas ocasiones es necesario identificar a&uacute;n m&aacute;s el protocolo. Por ejemplo, si se usa el puente JDBC-ODBC no es suficiente con <B>jdbc:odbc</B>, ya que pueden existir m&uacute;ltiples drivers ODBC, y en este caso, hay que especificar a&uacute;n m&aacute;s, mediante <B>jdbc:odbc:fuente de datos</B>.  </P>
+
+<P>Una vez que se tiene un objeto de tipo <B>Connection</B>, se pueden crear sentencias, <B>statements</B>, ejecutables. Cada una de estas sentencias puede devolver cero o m&aacute;s resultados, que se devuelven como objetos de tipo <B>ResultSet</B>. </P>
+
+<P>Y la tabla siguiente muestra la misma lista de clases e interfaces junto con una breve descripci&oacute;n. </P>
+
+<CENTER><TABLE BORDER=1 CELLSPACING=1 CELLPADDING=4 WIDTH=580>
+<TR><TD WIDTH="30%" VALIGN="TOP">
+<P ALIGN="CENTER"><FONT class="indice"><I>Clase/Interface</I></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<P ALIGN="CENTER"><FONT class="indice"><I>Descripci&oacute;n</I></FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>Driver</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Permite conectarse a una base de datos: cada gestor de base de datos requiere un driver distinto</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>DriverManager</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Permite gestionar todos los drivers instalados en el sistema</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>DriverPropertyInfo</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Proporciona diversa informaci&oacute;n acerca de un driver</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>Connection</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Representa una conexi&oacute;n con una base de datos. Una aplicaci&oacute;n puede tener m&aacute;s de una conexi&oacute;n a m&aacute;s de una base de datos</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>DatabaseMetadata</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Proporciona informaci&oacute;n acerca de una Base de Datos, como las tablas que contiene, etc.</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>Statement</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Permite ejecutar sentencias SQL sin par&aacute;metros</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>PreparedStatement</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Permite ejecutar sentencias SQL con par&aacute;metros de entrada</FONT>/TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>CallableStatement</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Permite ejecutar sentencias SQL con par&aacute;metros de entrada y salida, t&iacute;picamente procedimientos almacenados</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>ResultSet</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Contiene las filas o registros obtenidos al ejecutar un SELECT</FONT></TD>
+</TR>
+<TR><TD WIDTH="30%" VALIGN="TOP"><FONT class="normal"><B>ResultSetMetadata</B></FONT></TD>
+<TD WIDTH="70%" VALIGN="TOP">
+<FONT class="normal">Permite obtener informaci&oacute;n sobre un <B>ResultSet</B>, como el n&uacute;mero de columnas, sus nombres, etc.</FONT></TD>
+</TR>
+</TABLE>
+</CENTER>
+
+<P>La primera aplicaci&oacute;n que se va a crear simplemente crea una tabla en el servidor, utilizando para ello el puente JDBC-ODBC, siendo la fuente de datos un servidor SQL Server. Si el lector desea utilizar otra fuente ODBC, no tiene m&aacute;s que cambiar los par&aacute;metros de <I>getConnection()</I> en el c&oacute;digo fuente. El establecimiento de la conexi&oacute;n es, como se puede es f&aacute;cil suponer, la parte que mayores problemas puede dar en una aplicaci&oacute;n de este tipo. Si algo no funciona, cosa m&aacute;s que probable en los primeros intentos, es muy recomendable activar la traza de llamadas ODBC desde el panel de control. De esta forma se puede ver lo que est&aacute; haciendo exactamente el <I>driver</I> JDBC y por qu&eacute; motivo no se est&aacute; estableciendo la conexi&oacute;n.  </P>
+
+<P>El siguiente diagrama relaciona las cuatro clases principales que va a usar cualquier programa Java con JDBC, y representa el esqueleto de cualquiera de los programas que se desarrollan para atacar a bases de datos.</P>
+
+<p align="center"><img src="cap21-12.gif" width="334" height="446"></p>
+
+<P>La aplicaci&oacute;n siguiente es un ejemplo en donde se aplica el esquema anterior, se trata de instalaci&oacute;n <a href="../fuentes/java2101.java">java2101.java</a>, crea una tabla y rellena algunos datos iniciales.  </P>
+
+<PRE>import java.sql.*;
+
+class java2101 {
+  static public void main( String[] args ) {
+    Connection conexion;
+    Statement sentencia;
+    ResultSet resultado;
+
+    System.out.println( "Iniciando programa." );
+
+    // Se carga el driver JDBC-ODBC
+    try {
+      Class.forName( "sun.jdbc.odbc.JdbcOdbcDriver" );
+   } catch( Exception e ) {
+      System.out.println( "No se pudo cargar el puente JDBC-ODBC." );
+      return;
+    }
+
+    try {
+      // Se establece la conexi&oacute;n con la base de datos
+      conexion = DriverManager.getConnection( "jdbc:odbc:Tutorial","","" );
+      sentencia = conexion.createStatement();
+      try {
+         // Se elimina la tabla en caso de que ya existiese
+         sentencia.execute( "DROP TABLE AGENDA" );
+      } catch( SQLException e ) {};
+
+      // Esto es c&oacute;digo SQL
+      sentencia.execute( "CREATE TABLE AMIGOS ("+
+        " NOMBRE VARCHAR(15) NOT NULL, " +
+        " APELLIDOS VARCHAR(30) NOT NULL, " +
+        " CUMPLE DATETIME) " );
+      sentencia.execute( "INSERT INTO AMIGOS " +
+        "VALUES('JOSE','GONZALEZ','03/15/1973')" );
+      sentencia.execute( "INSERT INTO AMIGOS " +
+        "VALUES('PEDRO','GOMEZ','08/15/1961')" );
+      sentencia.execute( "INSERT INTO AMIGOS " +
+        "VALUES('GONZALO','PEREZ', NULL)" );
+    } catch( Exception e ) {
+      System.out.println( e );
+      return;
+    }
+  System.out.println( "Creacion finalizada." );
+  } 
+}</PRE>
+
+<P>Las partes m&aacute;s interesantes del c&oacute;digo son las que se van a revisar a continuaci&oacute;n, profundizando en cada uno de los pasos.</P>
+
+<P>Lo primero que se hace es importar toda la funcionalidad de JDBC, a trav&eacute;s de la primera sentencia ejecutable del programa.</P>
+
+<PRE>import java.sql.*;</PRE>
+
+<P>Las siguientes l&iacute;neas son las que cargan el puente JDBC-ODBC, mediante el m&eacute;todo <I>forName()</I> de la clase <B>Class</B>.</P>
+
+<PRE>try {
+  Class.forName( "sun.jdbc.odbc.JdbcOdbcDriver" );
+  } catch( Exception e ) {
+    System.out.println( "No se pudo cargar el puente JDBC-ODBC." );
+    return;
+  }</PRE>
+
+<P>En teor&iacute;a esto no es necesario, ya que <B>DriverManager</B> se encarga de leer todos los <I>drivers</I> JDBC compatibles, pero no siempre ocurre as&iacute;, por lo que es mejor asegurarse. El m&eacute;todo <I>forName()</I> localiza, lee y enlaza din&aacute;micamente una clase determinada. Para <I>drivers</I> JDBC, la sintaxis que JavaSoft recomienda de <I>forName()</I> es <I>nombreEmpresa.nombreBaseDatos.nombreDriver</I>, y el <I>driver</I> deber&aacute; estar ubicado en el directorio <I>nombreEmpresa\nombreBaseDatos\nombreDriver.class</I> a partir del directorio indicado por la variable de entorno <I>CLASSPATH</I>. En este caso se indica que el puente JDBC-ODBC que se desea leer es precisamente el de Sun.  </P>
+
+<P>Si por cualquier motivo no es posible conseguir cargar <B>JdbcOdbcDriver.class</B>, se intercepta la excepci&oacute;n y se sale del programa. En este momento es la hora de echar mano de la informaci&oacute;n que puedan proporcionar las trazas ODBC. </P>
+
+<P>La carga del driver tambi&eacute;n se puede especificar desde la l&iacute;nea de comandos al lanzar la aplicaci&oacute;n:</P>
+
+<PRE><FONT color="#0000ff">java -Djdbc.drivers=sun.jdbc.odbc.JdbcOdbcDriver ElPrograma</FONT></PRE>
+
+<P>A continuaci&oacute;n, se solicita a <B>DriverManager</B> que proporcione una conexi&oacute;n para una fuente de datos ODBC. El par&aacute;metro <B>jdbc:odbc:Tutorial</B> especifica que la intenci&oacute;n es acceder a la fuente de datos con nombre <B>Tutorial</B><I>,</I> <I>Data Source Name</I> o DSN, en la terminolog&iacute;a ODBC.  </P>
+
+<PRE>conexion = DriverManager.getConnection("jdbc:odbc:Tutorial","","" );</PRE>
+
+<P>El segundo y tercer par&aacute;metro son el nombre del usuario y la clave con la cual se intentar&aacute; la conexi&oacute;n. En este caso el acceso es libre, para acceder como administrador del sistema en el caso de un servidor MS SQL se usa la cuenta <I>sa</I> o <I>system administrator</I>, cuya cuenta de acceso no tiene clave definida; en caso de acceder a un servidor MS Access, la cuenta del administrador es <I>admin</I> y tambi&eacute;n sin clave definida. Esta es la &uacute;nica l&iacute;nea que con seguridad habr&aacute; de cambiar el programador para probar sus aplicaciones. <I>getConnection</I> admite tambi&eacute;n una forma con un &uacute;nico par&aacute;metro (el URL de la base de datos), que debe proporcionar toda la informaci&oacute;n de conexi&oacute;n necesaria al <I>driver</I> JDBC correspondiente. Para el caso JDBC-ODBC, se puede utilizar la sentencia equivalente:  </P>
+
+<I><P>DriverManager.getConnection ( "jdbc:odbc:SQL;UID=sa;PWD=" );</I>  </P>
+
+<P>Para el resto de los <I>drivers</I> JDBC, habr&aacute; que consultar la documentaci&oacute;n de cada <I>driver</I> en concreto.  </P>
+
+<P>Inmediatamente despu&eacute;s de obtener la conexi&oacute;n, en la siguiente l&iacute;nea</P>
+
+<PRE>sentencia = conexion.createStatement();</PRE>
+
+<P>se solicita que proporcione un objeto de tipo <I>Statement</I> para poder ejecutar sentencias a trav&eacute;s de esa conexi&oacute;n. Para ello se dispone de los m&eacute;todos <I>execute(String sentencia)</I> para ejecutar una petici&oacute;n SQL que no devuelve datos o <I>executeQuery(String sentencia)</I> para ejecutar una consulta SQL. Este &uacute;ltimo m&eacute;todo devuelve un objeto de tipo <I>ResultSet</I>.  </P>
+
+<P>Una vez que se tiene el objeto <I>Statement</I> ya se pueden lanzar consultas y ejecutar sentencias contra el servidor. A partir de aqu&iacute; el resto del programa realmente es SQL «adornado»: en la l&iacute;nea:</P>
+
+<PRE>sentencia.execute( "DROP TABLE AMIGOS" );</PRE>
+
+<P> se ejecuta <I>DROP TABLE AMIGOS</I> para borrar cualquier tabla existente anteriormente. Puesto que este ejemplo es una aplicaci&oacute;n «de instalaci&oacute;n» y es posible que la tabla <I>AMIGOS</I> no exista, dando como resultado una excepci&oacute;n, se a&iacute;sla la <I>sentencia.execute()</I> mediante un <I>try</I> y un <I>catch</I>.  </P>
+
+<P>La l&iacute;nea siguiente ejecuta una sentencia SQL que crea la tabla <I>AMIGOS</I> con tres campos: <I>NOMBRE, APELLIDOS</I> y <I>CUMPLE</I>. De ellos, &uacute;nicamente el tercero, correspondiente al cumplea&ntilde;os, es el que puede ser desconocido, es decir, puede contener valores nulos.  </P>
+
+<PRE>sentencia.execute( "CREATE TABLE AMIGOS ("+
+        " NOMBRE VARCHAR(15) NOT NULL, " +
+        " APELLIDOS VARCHAR(30) NOT NULL, " +
+        " CUMPLE DATETIME) " );</PRE>
+
+<P>Y ya en las l&iacute;neas siguientes se ejecutan sentencias <I>INSERT</I> para rellenar con datos la tabla. En todo momento se ha colocado un <I>try ... catch</I> exterior para interceptar cualquier excepci&oacute;n que puedan dar las sentencias. En general, para <I>java.sql</I> est&aacute; definida una clase especial de excepciones que es <I>SQLException</I>. Se obtendr&aacute; una excepci&oacute;n de este tipo cuando ocurra cualquier error de proceso de JDBC, tanto si es a nivel JDBC como si es a nivel inferior (ODBC o de protocolo).  </P>
+
+<P>Por ejemplo, si en lugar de <I>GONZALO</I> en la l&iacute;nea correspondiente a la &uacute;ltima inserci&oacute;n en la Base de Datos, se intenta a&ntilde;adir un nombre nulo (<I>NULL</I>), se generar&aacute; una excepci&oacute;n <I>SQLException</I> con el mensaje </P>
+
+<P><FONT color="#0000ff">[Microsoft][ODBC SQL Server Driver][SQL Server]Attempt to insert the value NULL into column 'NOMBRE', table 'master.dbo.AGENDA'; column does not allow nulls. INSERT fails.</FONT></P>
+
+<P>que en el caso de <I>Microsoft Access</I> ser&iacute;a:</P>
+
+<P><FONT color="#0000ff"> [Microsoft][ODBC Microsoft Access 97 Driver] The field 'AGENDA.NOMBRE' can't contain a Null value because the Required property for this field is set to True.  Enter a value in this field.</FONT>
+</P>
+<P>En rom&aacute;n paladino, el hecho de que la columna <I>NOMBRE</I> est&eacute; definida como <I>NOT NULL</I>, hace que no pueda quedarse vac&iacute;a. </P>
+
+<P>Ahora se ver&aacute;n los pasos que hay que dar para obtener informaci&oacute;n a partir de una base de datos ya creada. Como se ha dicho anteriormente, se utilizar&aacute; <I>executeQuery</I> en lugar de <I>execute</I> para obtener resultados. Se sustituyen  las l&iacute;neas  que conten&iacute;an esa sentencia por :  </P>
+
+<PRE>resultado = sentencia.executeQuery( "SELECT * FROM AMIGOS" );
+while( resultado.next() ) {
+  String nombre = resultado.getString( "NOMBRE" );
+  String apellidos = resultado.getString( "APELLIDOS" );
+  String cumple = resultado.getString( "CUMPLE" );
+  System.out.println( "El aniversario de D. " + nombre + " " 
+    + apellidos + ", se celebra el " + cumple );
+  }</PRE>
+
+<P>En este caso, en la primera l&iacute;nea se utiliza <I>executeQuery</I> para obtener el resultado de <I>SELECT * FROM AMIGOS</I>. Mediante <I>resultado.next()</I> la posici&oacute;n se situar&aacute; en el «siguiente» elemento del resultado, o bien sobre el primero si todav&iacute;a no se ha utilizado. La funci&oacute;n <I>next()</I> devuelve <I>true</I> o <I>false</I> si el elemento existe, de forma que se puede iterar mediante <I>while ( resultado.next() )</I> para tener acceso a todos los elementos.  </P>
+
+<P>A continuaci&oacute;n, en las l&iacute;neas siguientes se utilizan los m&eacute;todos <I>getXXX()</I> de resultado para tener acceso a las diferentes columnas. El acceso se puede hacer por el nombre de la columna, como en las dos primeras l&iacute;neas, o bien mediante su ubicaci&oacute;n relativa, como en la &uacute;ltima l&iacute;nea. Adem&aacute;s de <I>getString()</I> est&aacute;n disponibles <I>getBoolean(), getByte(), getDouble(), getFloat(), getInt(), getLong(), getNumeric(), getObject(), getShort(), getDate(), getTime()</I> y <I>getUnicodeStream()</I>, cada uno de los cuales devuelve la columna en el formato correspondiente, si es posible.  </P>
+
+<P>Despu&eacute;s de haber trabajado con una sentencia o una conexi&oacute;n es recomendable cerrarla mediante <I>sentencia.close()</I> o <I>conexi&oacute;n.close()</I>. De forma predeterminada los <I>drivers</I> JDBC deben hacer un <I>COMMIT</I> de cada sentencia. Este comportamiento se puede modificar mediante el m&eacute;todo <I>Connection.setAutoCommit( boolean nuevovalor)</I>. En el caso de que se establezca <I>AutoCommit</I> a <I>false</I>, ser&aacute; necesario llamar de forma expl&iacute;cita a <I>Connection.commit()</I> para guardar los cambios realizados o <I>Connection.rollback()</I> para deshacerlos.  </P>
+
+<P>Como el lector habr&aacute; podido comprobar hasta ahora, no hay nada intr&iacute;nsecamente dif&iacute;cil en conectar Java con una base de datos remota. Los posibles problemas de conexi&oacute;n que puede haber (selecci&oacute;n del <I>driver</I> o fuente de datos adecuada, obtenci&oacute;n de acceso, etc.), son problemas que se tendr&iacute;an de una u otra forma en cualquier lenguaje de programaci&oacute;n.  </P>
+
+<P>El objeto <B>ResultSet</B> devuelto por el m&eacute;todo <I>executeQuery()</I>, permite recorrer las filas obtenidas, no proporciona informaci&oacute;n referente a la estructura de cada una de ellas; para ello se utiliza <B>ResultSetMetaData</B>, que permite obtener el tipo de cada campo o columna, su nombre, si es del tipo autoincremento, si es sensible a may&uacute;sculas, si se puede escribir en dicha columna, si admite valores nulos, etc.</P>
+
+<P>Para obtener un objeto de tipo <B>ResultSetMetaData</B> basta con llamar al m&eacute;todo <I>getMetaData()</I> del objeto <B>ResultSet</B>.</P>
+
+<P>En la lista siguiente aparecen algunos de los m&eacute;todos m&aacute;s importantes de <B>ResultSetMetaData</B>, que permiten averiguar toda la informaci&oacute;n necesaria para formatear la informaci&oacute;n correspondiente a una columna, etc.</P>
+
+<P><I>getCatalogName()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nombre de la columna en el cat&aacute;logo de la base de datos</P>
+
+<P><I>getColumnName()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nombre de la columna</P>
+
+<P><I>getColumnLabel()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nombre a utilizar a la hora de imprimir el nombre de la columna</P>
+
+<P><I>getColumnDisplaySize()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ancho m&aacute;ximo en caracteres necesario para mostrar el contenido de la columna</P>
+
+<P><I>getColumnCount()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N&uacute;mero de columnas en el <B>ResultSet</B></P>
+
+<P><I>getTableName()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nombre de la tabla a que pertenece la columna</P>
+
+<P><I>getPrecision()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N&uacute;mero de d&iacute;gitos de la columna</P>
+
+<P><I>getScale()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;N&uacute;mero de decimales para la columna</P>
+
+<P><I>getColumnType()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Tipo de la columna (uno de los tipos SQL en <B>java.sql.Types</B>)</P>
+
+<P><I>getColumnTypeName()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Nombre del tipo de la columna</P>
+
+<P><I>isSigned()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Para n&uacute;meros, indica si la columna corresponde a un n&uacute;mero con signo</P>
+
+<P><I>isAutoIncrement()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si la columna es de tipo autoincremento</P>
+
+<P><I>isCurrency()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si la columna contiene un valor monetario</P>
+
+<P><I>isCaseSensitive()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si la columna contiene un texto sensible a may&uacute;sculas</P>
+
+<P><I>isNullable()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si la columna puede contener un <FONT FACE="Courier" SIZE=2>NULL</FONT> SQL. Puede devolver los valores<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier" SIZE=2>columnNoNulls</FONT>, <FONT FACE="Courier" SIZE=2>columnNullable</FONT> o <FONT FACE="Courier" SIZE=2>columnNullableUnknown</FONT>, miembros finales<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;est&aacute;ticos de <B>ResultSetMetaData</B> (constantes)</P>
+
+<P><I>isReadOnly()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si la columna es de solo lectura</P>
+
+<P><I>isWritable()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si la columna puede modificarse, aunque no lo garantiza</P>
+
+<P><I>isDefinitivelyWritable()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si es absolutamente seguro que la columna se puede modificar</P>
+
+<P><I>isSearchable()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Indica si es posible utilizar la columna para determinar los criterios de b&uacute;squeda de un SELECT</P>
+
+<P><I>getSchemaName()</I><BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Devuelve el texto correspondiente al esquema de la base de datos para esa columna</P>
+
+<P>En general pues, los objetos que se van a poder encontrar en una aplicaci&oacute;n que utilice JDBC, ser&aacute;n los que se indican a continuaci&oacute;n.</P>
+
+<P><B>Connection</B>
+<DIR>
+Representa la conexi&oacute;n con la base de datos. Es el objeto que permite realizar las consultas SQL y obtener los resultados de dichas consultas. Es el objeto base para la creaci&oacute;n de los objetos de acceso a la base de datos.
+</DIR></P>
+
+<P><B>DriverManager</B>
+<DIR>
+Encargado de mantener los drivers que est&aacute;n disponibles en una aplicaci&oacute;n concreta. Es el objeto que mantiene las funciones de administraci&oacute;n de las operaciones que se realizan con la base de datos.
+</DIR></P>
+
+<P><B>Statement</B>
+<DIR>
+Se utiliza para enviar las sentencias SQL simples, aquellas que no necesitan par&aacute;metros, a la base de datos.
+</DIR></P>
+
+<P><FONT class="normal"><B>PreparedStatement</B>
+<DIR>
+Tiene una relaci&oacute;n de herencia con el objeto <B>Statement</B>, a&ntilde;adi&eacute;ndole la funcionalidad de poder utilizar par&aacute;metros de entrada. Adem&aacute;s, tiene la particularidad de que la pregunta ya ha sido compilada antes de ser realizada, por lo que se denomina <I>preparada</I>. La principal ventaja, aparte de la utilizaci&oacute;n de par&aacute;metros, es la rapidez de ejecuci&oacute;n de la pregunta.
+</DIR></FONT></P>
+
+<P><FONT class="normal"><B>CallableStatement</B>
+<DIR>
+Tiene una relaci&oacute;n de herencia cn el objeto PreparedStatement. Permite utilizar funciones implementadas directamente sobre el sistema de gesti&oacute;n de la base de datos. Teniendo en cuenta que &eacute;ste posee informaci&oacute;n adicional sobre el uso de las estructuras internas, &iacute;ndices, etc.; las funciones se realizar&aacute;n de forma m&aacute;s eficiente. Este tipo de operaciones es muy utilizada en el caso de ser funciones muy complicadas o bien que vayan a ser ejecutadas varias veces a lo largo del tiempo de vida de la aplicaci&oacute;n.
+</DIR></FONT></P>
+
+<P><FONT class="normal"><B>ResultSet</B>
+<DIR>
+<P>Contiene la tabla resultado de la pregunta SQL que se haya realizado. En p&aacute;rrafos anteriores se han comentado los m&eacute;todos que proporciona este objeto para recorrer dicha tabla.
+</DIR></FONT></P>
+
+
+  </font></td></tr>
+</table>
+
+<!-- Menú de la parte inferior de la página ------------------------------------------------->
+<table align="center" border="0" width="684">
+  <tr>
+    <td width="685"><p align="center">   
+    <MAP NAME="mapa1"><AREA SHAPE="RECT" COORDS="636, 8, 671, 28" HREF="http://java.sun.com">
+	<AREA SHAPE="CIRCLE" COORDS="121, 19, 11" HREF="mailto:froufe@arrakis.es">
+	<AREA SHAPE="CIRCLE" COORDS="98, 18, 11" HREF="../introduccion/indice.html">
+	<AREA SHAPE="CIRCLE" COORDS="75, 17, 11" HREF="cap21-5.html">
+	<AREA SHAPE="CIRCLE" COORDS="53, 18, 11" HREF="cap21-3.html">
+	<AREA SHAPE="CIRCLE" COORDS="29, 18, 9" HREF="../index.html"></MAP>
+	<img ismap usemap="#mapa1" border="0" height="37" alt="Navegador" src="../imagenes/BarraInferior.gif" width="682"></td>
+  </tr>
+  <tr>
+    <td width="685"><p align="center"><font class="indice">
+	<a href="../index.html" onmouseover="window.status='P&aacute;gina Principal del Tutorial'; return true">Home</a> | 
+	<a href="cap21-3.html" onmouseover="window.status='P&aacute;gina Anterior del Tutorial'; return true">Anterior</a> | 
+	<a href="cap21-5.html" onmouseover="window.status='P&aacute;gina Siguiente del Tutorial'; return true">Siguiente</a> | 
+	<a href="../introduccion/indice.html" onmouseover="window.status='Tabla de Contenido del Tutorial'; return true">Indice</a> | 
+	<a href="mailto:froufe@arrakis.es" onmouseover="window.status='Correo Electr&oacute;nico con el Autor'; return true">Correo</a> </font></td>
+  </tr>
+</table>
+
+<layer src="http://www.spidersoft.com/ads/bwz468_60.htm" visibility=hidden id=a1 width=600 onload="moveToAbsolute(ad1.pageX,ad1.pageY); a1.clip.height=60;visibility='show';"></layer>
+</body>
+</html>
+<!-- Fin de la página ----------------------------------------------------------------------->

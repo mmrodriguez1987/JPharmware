@@ -1,0 +1,253 @@
+--EMPLEADOS
+create procedure AgregarEmpleados
+@CodCargo int,@FechaIngreso datetime,
+@Cedula char(16), @Nombres nvarchar(25),
+@Apellidos nvarchar(25), @Domicilio nvarchar(50),
+@Sexo char(1),@Foto as nvarchar(300), @Telefono char(10),@NoInss char(7)
+as
+if EXISTS(select Cedula from Empleados where Cedula = @Cedula)
+begin
+	Print 'Ya se encuentra registrado esta persona'
+end
+else
+begin
+	insert into Empleados values(@CodCargo,@FechaIngreso,null,@Cedula,@Nombres,@Apellidos,@Domicilio,@Telefono,@Sexo,@Foto,'1',@NoInss)
+end
+
+
+create procedure ModificarDatosEmpleados
+@CodEmpleado int,@CodCargo int,@FechaIngreso datetime,
+@Cedula char(16), @Nombres nvarchar(25),@Apellidos nvarchar(25),@Domicilio nvarchar(50),
+@Sexo char(1), @Foto as nvarchar(255), @Telefono char(10),@NoInss char(7)
+as
+update Empleados set CodCargo = @CodCargo where CodEmpleado = @CodEmpleado
+update Empleados set FechaIngreso = @FechaIngreso where CodEmpleado = @CodEmpleado
+update Empleados set Cedula = @Cedula where CodEmpleado = @CodEmpleado
+update Empleados set Nombres = @Nombres where CodEmpleado = @CodEmpleado
+update Empleados set Apellidos = @Apellidos where CodEmpleado = @CodEmpleado
+update Empleados set Domicilio = @Domicilio where CodEmpleado = @CodEmpleado
+update Empleados set Telefono = @Telefono where CodEmpleado = @CodEmpleado 
+update Empleados set Sexo = @Sexo where CodEmpleado = @CodEmpleado  
+update Empleados set Foto = @Foto where CodEmpleado = @CodEmpleado
+update Empleados set NoInss = @NoInss where CodEmpleado = @CodEmpleado
+
+
+create procedure DarBajaEmpleado
+@CodEmpleado int, @FechaDespido datetime
+as 
+if EXISTS(select Estado from Empleados where CodEmpleado = @CodEmpleado and Estado = '0')
+begin
+	Print 'El empleado ya fue despedido'
+end
+else
+begin
+	update Empleados set Estado = '0' where CodEmpleado = @CodEmpleado
+	update Empleados set FechaDespido = @FechaDespido where CodEmpleado = @CodEmpleado
+end
+
+--CARGOS
+create procedure AgregarCargos
+@Descripcion nvarchar(30),@Viatico float,@SalarioBasico float
+as
+declare @CodCargo as int
+if exists(select Descripcion from Cargos where Descripcion = @Descripcion)
+begin
+	Print 'Ya existe el Cargo'
+end
+else
+begin
+	insert into Cargos values(@Descripcion)
+	select @CodCargo= max (CodCargo)from Cargos 
+        insert into HistorialCargos values (@CodCargo,getdate(),null,@SalarioBasico,@Viatico,'1')
+	insert into DetalleVigenciaCargo values(@CodCargo,getdate(),null,'1')
+end
+
+
+create procedure ModificarCargos
+@CodCargo int,@SalarioBasico float,@Viatico float,@Estado bit
+as
+declare @SalarioBasico2 as float
+declare @Viatico2 as float
+select @SalarioBasico2= SalarioBasico from HistorialCargos where CodCargo=@CodCargo and Estado=1
+select @Viatico2= Viatico from HistorialCargos where CodCargo=@CodCargo and Estado=1
+if(@SalarioBasico2<>@SalarioBasico or @Viatico2<>@Viatico)
+begin
+	--se insertara una nueva tupla
+	update HistorialCargos set FechaRemplazo=getdate()
+	update HistorialCargos set HistorialCargos.Estado=0
+	insert into HistorialCargo values (@CodCargo,getdate(),null,@SalarioBasico,@Viatico,'1')
+end
+
+
+*****CONSULTA PARA QUE PARA OBTENER EL CodCargo y Estado para que pueda entrar al proc*********** 
+*****alamacenado ModificarCargos***********
+
+select Cargos.CodCargo,DetalleVigenciaCargo.Estado from Cargos inner join DetalleVigenciaCargo on Cargos.Descripcion='CPF'
+***************************************************************************************************
+
+create procedure DarBajaCargo
+@CodCargo int
+as
+if EXISTS(select CodCargo from Cargos where  CodCargo = @CodCargo)
+begin
+	update DetalleVigenciaCargo set FechaFin=getdate() where CodCargo=@CodCargo
+	update DetalleVigenciaCargo set Estado=0 where CodCargo=@CodCargo-- 0=no vigente (dado de baja)
+end
+else
+begin
+	Print 'No existe el Cargo'
+end
+
+DarBajaCargo '5'
+****************CONSULTA PARA QUE ME ARROGE EL CODIGO DEL CAGO PASANDO COMO PARAMETRO DESCRIPCION****
+select CodCargo from Cargos where Descripcion='CPF'
+**************************************************************************************************
+
+
+
+--DEDUCCIONES
+create procedure AgregarDeduccion
+@CodEmpleado int, @FechaDeduccion datetime,
+@Motivo nvarchar(50),@TipoDeduccion char(9),@Monto float
+as
+declare @SaldoDisponible as float
+declare @TotalDeducciones as float
+declare @SalarioBasico  as float
+declare @Viatico  as float
+set @SalarioBasico = dbo.ObtenerSalarioBasico(@CodEmpleado)
+set @Viatico = dbo.ObtenerViatico(@CodEmpleado)
+select @TotalDeducciones = dbo.TotalDeducciones(@CodEmpleado)
+set @SaldoDisponible = @SalarioBasico + @Viatico - @TotalDeducciones
+if @Monto > @SaldoDisponible
+	begin
+		Print 'Su saldo es insuficiente, espere la otra quincena'
+	end
+	else 
+	begin
+		insert into Deducciones values(@CodEmpleado,@FechaDeduccion,@Motivo,@TipoDeduccion,@Monto,'0')
+end
+
+
+create procedure AgregarDeducProd
+@CodEmpleado int, @FechaDeduccion datetime,
+@Motivo nvarchar(50),@TipoDeduccion char(9),@CodProdProv int,
+@Cantidad int,@Precio float, @Trick as int
+as
+declare @SaldoDisponible as float
+declare @TotalDeducciones as float
+declare @SalarioBasico  as float
+declare @Viatico  as float
+declare @Monto as float
+set @SalarioBasico = dbo.ObtenerSalarioBasico(@CodEmpleado)
+set @Viatico = dbo.ObtenerViatico(@CodEmpleado)
+select @TotalDeducciones = dbo.TotalDeducciones(@CodEmpleado)
+set @SaldoDisponible = @SalarioBasico + @Viatico - @TotalDeducciones
+set @Monto=@Cantidad*@Precio
+if @Monto > @SaldoDisponible
+begin
+	Print 'Su saldo es insuficiente, espere la otra quincena'
+end
+else 
+begin
+	if @Trick=0
+		begin
+			--significa que es la primera vez que entra al detalle, ojo esta variable se manipulara desde java
+			insert into Deducciones values(@CodEmpleado,@FechaDeduccion,@Motivo,@TipoDeduccion,@Monto,'0')
+			declare @CodDeduccion as int
+			select @CodDeduccion= max (CodDeduccion)from Deducciones
+			insert into DetalleDeduccion values(@CodDeduccion,@CodProdProv,@Cantidad,@Precio)
+			EXEC ReducirInventario @CodProdProv,@Cantidad,@Monto
+		end
+		else
+		begin
+			--significa que se esta mandando a llamar al menos la 2da vez, o sea que se pide mas de un producto 
+			declare @CodDeduccion2 as int
+			select @CodDeduccion2= max (CodDeduccion)from Deducciones
+			insert into DetalleDeduccion values(@CodDeduccion2,@CodProdProv,@Cantidad,@Precio)
+			EXEC ReducirInventario @CodProdProv,@Cantidad,@Monto			
+		end
+end
+
+
+create procedure ReducirInventario
+@CodProdProv int,@Cantidad int,@Monto float
+as
+declare @CodVencimiento as int
+declare @CodCategoria as int
+declare @CodDeduccion as int
+declare @Cantidad2 as int
+select @CodDeduccion = MAX(CodDeduccion) from Deducciones
+select @CodCategoria = dbo.ObtenerCodCategoria(@CodProdProv)
+if (@CodCategoria <> 1)
+begin
+	select @CodVencimiento = dbo.ObtenerCodVencimiento(@CodProdProv)		
+end
+else
+begin   
+	select @CodVencimiento = dbo.ObtenerCodVencProdMisc(@CodProdProv)	
+end
+	update Deducciones set Monto = Monto + @Monto where CodDeduccion = @CodDeduccion
+EXEC AsignarVencimientoVentas @CodVencimiento, @Cantidad
+
+
+create function VerificarSaldo(@CodEmpleado int,@Monto float)
+returns int
+begin
+	declare @SaldoDisponible as float		--0=No hay suficiente saldo
+	declare @TotalDeducciones as float		--1=Suficiente saldo
+	declare @SalarioBasico  as float
+	declare @Viatico  as float
+	declare @resultado as int
+	set @SalarioBasico = dbo.ObtenerSalarioBasico(@CodEmpleado)
+	set @Viatico = dbo.ObtenerViatico(@CodEmpleado)
+	select @TotalDeducciones = dbo.TotalDeducciones(@CodEmpleado)
+	set @SaldoDisponible = @SalarioBasico + @Viatico - @TotalDeducciones
+	if @Monto > @SaldoDisponible
+	begin
+		set @resultado=0
+	end
+	else 
+	begin
+		set @resultado=1
+	end
+return @resultado
+end
+
+
+create procedure RevisarExistenciaProductos
+@CodProdProv int
+as
+select sum(ExistenciasDetalle)as 'CantidadExistente' from VencimientoProductos where CodProdProv=@CodProdProv and Vencido=0
+
+
+create function ObtenerSalarioBasico(@CodEmpleado int)
+returns float
+begin
+	declare @SalarioBasico as float
+	declare @CodCargo as int
+	select @CodCargo = CodCargo from Empleados where CodEmpleado = @CodEmpleado
+	select @SalarioBasico = SalarioBasico from HistorialCargos where CodCargo = @CodCargo and Estado='1'
+	return @SalarioBasico
+end
+
+
+create procedure AnularDeduccion
+@CodDeduccion int
+as 
+update Deducciones set Estado = '1' where CodDeduccion = @CodDeduccion
+
+
+create procedure AgregarInasistencia
+@CodEmpleado int,@Fecha datetime, @DiaFeriado as bit
+as
+declare @CodPlanilla as int
+select @CodPlanilla = CodPlanilla from Planilla where EstadoCancelacion = '0' and EstadoAnulacion = '0'
+if EXISTS(select CodEmpleado from ControlAsistencia where CodEmpleado = @CodEmpleado and Fecha = @Fecha)
+	begin
+		Print 'Inasistencia: Ya existe un registro con esta fecha de este Empleado'
+	end
+else
+	begin
+		insert into ControlAsistencia values(@CodPlanilla,@CodEmpleado,@Fecha,'0',null,null,0,@DiaFeriado)
+	end
+

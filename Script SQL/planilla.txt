@@ -1,0 +1,45 @@
+KEVIN ACORDATE DE VERIFICAR LO QUE ES ANULAR DE CARGOS Y DEDUCCIONES
+KEVIN MODIFICA LA FUNCION TotalPagadoPlanilla
+KEVIN MODIFICA LO QUE LOS PROCEDIMIENTOS ALMACENADOS DE ModificarDatosEmpleados,DarBajaEmpleado
+
+
+-- VAS A EMPEZAR POR EL PROCEDIMIENTO ALMACENADO AgregarHoraSalida
+
+--PLANILLA
+create procedure AgregarPlanilla
+@FechaInicio datetime,@FechaFinal datetime
+as
+insert into Planilla values(@FechaInicio,@FechaFinal,null,'0','0')
+
+
+create procedure LiquidarPlanilla
+@FechaCancelacion datetime
+as
+declare @CodPlanilla as int
+declare @TotalPagado as float
+select @CodPlanilla = CodPlanilla from Planilla where EstadoCancelacion = '0' and EstadoAnulacion = '0'
+update Planilla set FechaCancelacion = @FechaCancelacion where CodPlanilla = @CodPlanilla
+update Planilla set EstadoCancelacion = '1' where CodPlanilla = @CodPlanilla
+
+create procedure AnularPlanilla
+@CodPlanilla int
+as
+update Planilla set EstadoAnulacion = '1' where CodPlanilla = @CodPlanilla
+update Planilla set EstadoCancelacion = '1' where CodPlanilla = @CodPlanilla
+
+
+--CONTROL DE ASISENCIA
+create procedure AgregarHoraEntrada
+@CodEmpleado int, @Fecha datetime, @HoraEntrada datetime, @DiaFeriado bit
+as
+declare @CodPlanilla as int
+select @CodPlanilla = CodPlanilla from Planilla where EstadoCancelacion = '0' and EstadoAnulacion = '0'
+if EXISTS(select CodEmpleado from ControlAsistencia where CodEmpleado = @CodEmpleado and Fecha = @Fecha)
+	begin
+		Print 'HoraEntrada: Ya existe un registro con esta fecha'
+	end
+		
+else
+	begin
+		insert into ControlAsistencia values(@CodPlanilla,@CodEmpleado,@Fecha,'1',@HoraEntrada,null,0,@DiaFeriado)
+	end

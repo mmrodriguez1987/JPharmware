@@ -1,0 +1,322 @@
+<html>
+<head>
+<meta http-equiv="copyright" content="1996-99, Agustin Froufe">
+<meta http-equiv="reply-to" content="froufe@arrakis.es">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta name="autor" content="Agustin Froufe">
+<meta name="description" content="Tutorial de Java para Principiantes basado en el JDK de Sun">
+<meta name="keywords" content="java, tutorial, manual, awt, jdk">
+<title>Tutorial de Java - Transacciones, Tipos...</title>
+<link rel="stylesheet" href="../imagenes/tutorial.css" type="text/css">
+</head>
+
+<BODY>
+<!-- Spidersoft WebZIP Ad Banner Insert -->
+<TABLE width=100% border="0" cellpadding="0" cellspacing="0">
+<TR>
+<TD>
+<ILAYER id=ad1 visibility=hidden height=60></ILAYER>
+<NOLAYER>
+<IFRAME SRC="http://www.spidersoft.com/ads/bwz468_60.htm" width="100%" height="60" marginwidth=0 marginheight=0 hspace=0 vspace=0 frameborder=0 scrolling=no></IFRAME>
+</NOLAYER>
+</TD>
+</TR>
+</TABLE>
+<!-- End of Spidersoft WebZIP Ad Banner Insert-->
+
+<!-- Menú de la parte superior de la página ------------------------------------------------->
+
+<table align="center" border="0" width="690">
+  <tr>
+    <td width="684"><MAP NAME="mapa"><AREA SHAPE="RECT" COORDS="8, 16, 588, 40" HREF="../index.html">
+	<AREA SHAPE="RECT" COORDS="594, 5, 631, 50" HREF="http://java.sun.com"></MAP>
+	<img ismap usemap="#mapa" border="0" height="60" alt="Tutorial de Java" src="../imagenes/BarraSuperior.gif" width="681"></td>
+  </tr>
+  <tr>
+    <td width="684"><p align="center"><font class="titulo">
+	Transacciones, Tipos...</font></td>
+  </tr>
+  <tr>
+    <td width="684"><font class="indice">
+	<a href="../parte21/cap21-4.html" onmouseover="window.status='P&aacute;gina Anterior del Tutorial'; return true">Anterior</a> | 
+	<a href="../parte21/cap21-6.html" onmouseover="window.status='P&aacute;gina Siguiente del Tutorial'; return true">Siguiente</font></a></td>
+  </tr>
+</table>
+<!-- Texto de cuerpo de la página ----------------------------------------------------------->
+
+<table align="center" border="0" width="690">
+  <tr><td><FONT class="normal">
+
+<P><FONT class="titulo1"><a name="Cap21_5_1"></a>Transacciones</FONT></P>
+
+<P>En p&aacute;rrafos anteriores se ha tratado de la creaci&oacute;n y uso de sentencias SQL, que siempre se obten&iacute;an llamando a un m&eacute;todo de un objeto de tipo <B>Connection</B>, como <I>createStatement()</I> o <I>prepareStatement()</I>. El uso de transacciones, tambi&eacute;n se controla mediante m&eacute;todos del objeto <B>Connection</B>. Como ya se ha dicho, <B>Connection</B> representa una conexi&oacute;n a una Base de datos dada, luego representa el lugar adecuado para el manejo de transacciones, dado que estas afectan a todas las sentencias ejecutadas sobre una conexi&oacute;n a la base de datos.</P>
+
+<P>Por defecto, una conexi&oacute;n funciona en modo <I>autocommit</I>, es decir, cada vez que se ejecuta una sentencia SQL se abre y se cierra autom&aacute;ticamente una transacci&oacute;n, que s&oacute;lo afecta a dicha sentencia. Es posible modificar esta opci&oacute;n mediante <I>setAutoCommit()</I>, mientras que <I>getAutoCommit()</I> indica si se est&aacute; en modo <I>autocommit</I> o no. Si no se est&aacute; trabajando en modo <I>autocommit</I> ser&aacute; necesario que se cierren expl&iacute;citamente las transacciones mediante <I>commit()</I> si tienen &eacute;xito, o <I>rollback()</I>, si fallan; n&oacute;tese que, tras cerrar una transacci&oacute;n, la pr&oacute;xima vez que se ejecute una sentencia SQL se abrir&aacute; autom&aacute;ticamente una nueva, por lo que no existe ning&uacute;n m&eacute;todo del tipo que permita iniciar una transacci&oacute;n.</P>
+
+<P>Es posible tambi&eacute;n especificar el nivel de aislamiento de una transacci&oacute;n, mediante <I>setTransactionIsolation()</I>, as&iacute; como averiguar cu&aacute;l es el nivel de aislamiento de la actual mediante <I>getTransactionIsolation()</I>. Los niveles de aislamiento se representan mediante las constantes que se muestran en la lista siguiente, en la cual se explica muy b&aacute;sicamente el efecto de cada nivel de aislamiento.</P>
+
+<P><FONT class="normal"><B>TRANSACTION_NONE</B><DIR>
+No se pueden utilizar transacciones.</DIR></FONT></P>
+
+<P><FONT class="normal"><B>TRANSACTION_READ_UNCOMMITTED</B><DIR>
+Desde esta transacci&oacute;n se pueden llegar a ver registros que han sido modificados por otra transacci&oacute;n, pero no guardados, por lo que podemos llegar a trabajar con valores que nunca llegan a guardarse realmente.</DIR></FONT></P>
+
+<P><FONT class="normal"><B>TRANSACTION_READ_COMMITTED</B><DIR>
+Se ven solo las modificaciones ya guardadas hechas por otras transacciones.</DIR></FONT></P>
+
+<P><FONT class="normal"><B>TRANSACTION_REPEATABLE_READ</B><DIR>
+Si se ley&oacute; un registro, y otra transacci&oacute;n lo modifica, guard&aacute;ndolo, y lo volvemos a leer, seguiremos viendo la informaci&oacute;n que hab&iacute;a cuando lo le&iacute;mos por primera vez. Esto proporciona un nivel de consistencia mayor que los niveles de aislamiento anteriores.</DIR></FONT></P>
+
+<P><FONT class="normal"><B>TRANSACTION_SERIALIZABLE</B><DIR>
+Se ver&aacute;n todos los registros tal y como estaban antes de comenzar la transacci&oacute;n, no importa las modificaciones que otras transacciones hagan, ni que lo hayamos le&iacute;do antes o no. Si se a&ntilde;adi&oacute; alg&uacute;n nuevo registro, tampoco se ver&aacute;.</DIR></FONT></P>
+
+<FONT class="normal"><P>Adem&aacute;s de manejar transacciones, el objeto <B>Connection</B> tambi&eacute;n proporciona algunos otros m&eacute;todos que permiten especificar caracter&iacute;sticas de una conexi&oacute;n a una base de datos; por ejemplo, los m&eacute;todos <I>isReadOnly()</I> y <I>setReadOnly()</I> permiten averiguar si una conexi&oacute;n a una base de datos es de s&oacute;lo lectura, o hacerla de s&oacute;lo lectura. El m&eacute;todo <I>isClosed()</I> permite averiguar si una conexi&oacute;n est&aacute; cerrada o no, y <I>nativeSQL()</I> permite obtener la cadena SQL que el driver mandar&iacute;a a la base de datos si se tratase de ejecutar la cadena SQL especificada, permitiendo averiguar qu&eacute; es exactamente lo que se le env&iacute;a a la base de datos.</P>
+
+
+<P><FONT class="titulo1"><a name="Cap21_5_2"></a>Informaci&oacute;n de la Base de Datos</FONT></P>
+
+<P>Falta a&uacute;n una pieza importante a la hora de trabajar con la conexi&oacute;n a la base de datos mediante <B>Connection</B>, y es la posibilidad de poder interrogar sobre las caracter&iacute;sticas de una base de datos; por ejemplo, puede se interesante saber si la base de datos soporta cierto nivel de aislamiento en una transacci&oacute;n, como la TRANSACTION_SERIALIZABLE, que muchos gestores no soportan. Para esto est&aacute; otro de los interfaces que proporciona JDBC, <B>DatabaseMetaData</B>, al que es posible interrogar sobre las caracter&iacute;sticas de la base de datos con la que se est&aacute; trabajando. Es posible obtener un objeto de tipo <B>DatabaseMetaData</B> mediante el m&eacute;todo <I>getMetaData()</I> de <B>Connection</B>.</P>
+
+<P><B>DatabaseMetaData</B> proporciona diversa informaci&oacute;n sobre una base de datos, y cuenta con varias docenas de m&eacute;todos, a trav&eacute;s de los cuales es posible obtener gran cantidad de informaci&oacute;n acerca de una tabla; por ejemplo, <I>getColumns()</I> devuelve las columnas de una tabla, <I>getPrimaryKeys()</I> devuelve la lista de columnas que forman la clave primaria, <I>getIndexInfo()</I> devuelve informaci&oacute;n acerca de sus &iacute;ndices, mientras que <I>getExportedKeys()</I> devuelve la lista de todas las claves ajenas que utilizan la clave primaria de esta tabla, y <I>getImportedKeys()</I> las claves ajenas existentes en la tabla. El m&eacute;todo <I>getTables()</I> devuelve la lista de todas las tablas en la base de datos, mientras que <I>getProcedures()</I> devuelve la lista de procedimientos almacenados. Muchos de los m&eacute;todos de <B>DatabaseMetaData</B> devuelven un objeto de tipo <B>ResultSet</B> que contiene la informaci&oacute;n deseada. El listado que se presenta a continuaci&oacute;n, muestra el c&oacute;digo necesario para obtener todas las tablas de una base de datos.</P>
+
+<PRE>String nombreTablas = "%";        // Listamos todas las tablas
+String tipos[] = new String[1];   // Listamos s&oacute;lo tablas
+tipos[0] = "TABLE";
+DatabaseMetaData dbmd = conexion.getMetaData();
+ResultSet tablas = dbmd.getTables( null,null,nombreTablas,tipos );
+
+boolean seguir = tablas.next();
+while( seguir ) {
+  // Mostramos s&oacute;lo el nombre de las tablas, guardado
+  // en la columna "TABLE_NAME"
+  System.out.println( 
+    tablas.getString( tablas.findColumn( "TABLE_NAME" ) ) );
+    seguir = tablas.next();
+  };</PRE>
+
+<P>Hay todo un grupo de m&eacute;todos que permiten averiguar si ciertas caracter&iacute;sticas est&aacute;n soportadas por la base de datos; entre ellos, destacan <I>supportsGroupBy()</I> indica si se soporta el uso de GROUP BY en un SELECT, mientras que <I>supportsOuterJoins()</I> indica si se pueden llevar a cabo <I>outer-joins</I>. El m&eacute;todo <I>supportsTransactions()</I>, comentado antes, indica si cierto tipo de transacciones est&aacute; soportado o no. Otros m&eacute;todos de utilidad son <I>getUserName()</I>, que devuelve el nombre del usuario actual; <I>getURL()</I>, que devuelve el URL de la base de datos actual.</P>
+
+<B><P>DatabaseMetaData</B> proporciona muchos otros m&eacute;todos que permiten averiguar cosas tales como el m&aacute;ximo n&uacute;mero de columnas utilizable en un SELECT, etc. En general, casi cualquier pregunta sobre las capacidades de la base de datos se puede contestar llamando a los distintos m&eacute;todos del objeto <B>DatabaseMetaData</B>, que merece la pena que el lector consulte cuando no sepa si cierta caracter&iacute;stica est&aacute; soportada.</P>
+
+<P><FONT class="titulo1"><a name="Cap21_5_3"></a>Tipos SQL en Java</FONT></P>
+
+<P>Muchos de los tipos de datos est&aacute;ndar de SQL ’92, no tienen un equivalente nativo en Java. Para superar esta deficiencia, se deben mapear los tipos de datos SQL en Java, utilizando las clases JDBC para acceder a los tipos de datos SQL. Es necesario saber c&oacute;mo recuperar adecuadamente tipos de datos Java; como <I>int</I>, <I>long</I>, o <I>string</I>, a partir de sus contrapartidas SQL almacenadas en base de datos. Esto puede ser especialmente importante si se est&aacute; trabajando con datos num&eacute;ricos, que necesiten control decimal con precisi&oacute;n, o con fechas SQL, que tienen un formato muy bien definido.</P>
+
+<P>El mapeo de los tipos de datos Java a SQL es realmente sencillo, tal como se muestra en la tabla que acompa&ntilde;a a este p&aacute;rrafo. Observe el lector que los tipos que comienzan por &quot;java&quot; no son tipos b&aacute;sicos, sino clases que tienen m&eacute;todos para trasladar los datos a formatos utilizables, y son necesarias estas clases porque no hay un tipo de datos b&aacute;sico que mapee directamente su contrapartida SQL. La creaci&oacute;n de estas clases debe hacerse siempre que se necesite almacenar un tipo de dato SQL en un programa Java, para poder utilizar directamente el dato desde la base de datos.</P>
+
+<CENTER><TABLE BORDER CELLSPACING=1 CELLPADDING=4 WIDTH=470>
+<TR><TD WIDTH="60%" VALIGN="TOP" ALIGN="center">
+<FONT class="indice"><B>Java</B></FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP" ALIGN="center">
+<FONT class="indice"><B>SQL</B></FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">String</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">VARCHAR</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">boolean</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">BIT</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">byte</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">TINYINT</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">short</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">SMALLINT</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">int</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">INTEGER</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">long</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">BIGINT</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">float</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">REAL</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">double</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">DOUBLE</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">byte[]-byte array: imagenes, sonidos...</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">VARBINARY (BLOBs)</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">java.sql.Date</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">DATE</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">java.sql.Time</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">TIME</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">java.sql.Timestamp</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP">
+<FONT class="normal">TIMESTAMP</FONT></TD>
+</TR>
+<TR><TD WIDTH="60%" VALIGN="TOP">
+<FONT class="normal">java.math.BigDecimal</FONT></TD>
+<TD WIDTH="40%" VALIGN="TOP" >
+<FONT class="normal">NUMERIC</FONT></TD>
+</TR>
+</TABLE>
+</CENTER>
+
+<P>El tipo de dato <I>byte[]</I>, es un array de bytes de tama&ntilde;o variable. Esta estructura de datos guarda datos binarios, que en SQL son VARBINARY y LONG-VARBINARY. Estos tipos se utilizan para almacenar im&aacute;genes, ficheros de documentos, y cosas parecidas. Para almacenar y recuperar este tipo de informaci&oacute;n de la base de datos, se deben utilizarlos m&eacute;todos para streams que proporciona JDBC: <I>setBinaryStream()</I> y <I>getBinaryStream()</I>.</P>
+
+<P>La conversi&oacute;n de tipos en el sentido contrario puede no estar tan clara, ya que hay tipos SQL cuya tipo Java correspondiente puede no ser evidente, como VARBINARY, o DECIMAL, etc. La tabla siguiente muestra los tipos Java correspondientes a cada tipo SQL.</P>
+
+<CENTER><TABLE BORDER CELLSPACING=1 CELLPADDING=4 WIDTH=368>
+<TR><TD WIDTH="51%" VALIGN="TOP" ALIGN="center">
+<FONT class="indice"><B>SQL</B></FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP" ALIGN="center">
+<FONT class="indice"><B>Java</B></FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">CHAR</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">String</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">VARCHAR</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">String</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">LONGVARCHAR</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">String</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">NUMERIC</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">java.math.BigDecimal</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">DECIMAL</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">java.math.BigDecimal</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">BIT</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">boolean</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">TINYINT</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">byte</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">SMALLINT</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">short</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">INTEGER</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">int</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">BIGINT</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">long</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">REAL</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">float</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">FLOAT</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">double</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">DOUBLE</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">double</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">BINARY</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">byte[]</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">VARBINARY</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">byte[]</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">LONGVARBINARY</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">byte[]</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">DATE</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">java.sql.Date</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">TIME</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">java.sql.Time</FONT></TD>
+</TR>
+<TR><TD WIDTH="51%" VALIGN="TOP">
+<FONT class="normal">TIMESTAMP</FONT></TD>
+<TD WIDTH="49%" VALIGN="TOP">
+<FONT class="normal">java.sql.Timestamp</FONT></TD>
+</TR>
+</TABLE>
+</CENTER>
+
+<P>Existe una constante para cada tipo de dato SQL, declarada en <B>java.sql.Types</B>; por ejemplo, el tipo al tipo TIMESTAMP le corresponde la constante <B>java.sql.Types.TIMESTAMP</B>.</P>
+
+<P>Adem&aacute;s, JDBC proporciona clases Java nuevas para representar varios tipos de datos SQL: estas son <B>java.sql.Date</B>, <B>java.sql.Time</B> y <B>java.sql.Timestamp</B>.</P>
+
+
+  </font></font></td></tr>
+</table>
+
+<!-- Menú de la parte inferior de la página ------------------------------------------------->
+<table align="center" border="0" width="684">
+  <tr>
+    <td width="685"><p align="center">   
+    <MAP NAME="mapa1"><AREA SHAPE="RECT" COORDS="636, 8, 671, 28" HREF="http://java.sun.com">
+	<AREA SHAPE="CIRCLE" COORDS="121, 19, 11" HREF="mailto:froufe@arrakis.es">
+	<AREA SHAPE="CIRCLE" COORDS="98, 18, 11" HREF="../introduccion/indice.html">
+	<AREA SHAPE="CIRCLE" COORDS="75, 17, 11" HREF="../parte21/cap21-6.html">
+	<AREA SHAPE="CIRCLE" COORDS="53, 18, 11" HREF="../parte21/cap21-4.html">
+	<AREA SHAPE="CIRCLE" COORDS="29, 18, 9" HREF="../index.html"></MAP>
+	<img ismap usemap="#mapa1" border="0" height="37" alt="Navegador" src="../imagenes/BarraInferior.gif" width="682"></td>
+  </tr>
+  <tr>
+    <td width="685"><p align="center"><font class="indice">
+	<a href="../index.html" onmouseover="window.status='P&aacute;gina Principal del Tutorial'; return true">Home</a> | 
+	<a href="../parte21/cap21-4.html" onmouseover="window.status='P&aacute;gina Anterior del Tutorial'; return true">Anterior</a> | 
+	<a href="../parte21/cap21-6.html" onmouseover="window.status='P&aacute;gina Siguiente del Tutorial'; return true">Siguiente</a> | 
+	<a href="../introduccion/indice.html" onmouseover="window.status='Tabla de Contenido del Tutorial'; return true">Indice</a> | 
+	<a href="mailto:froufe@arrakis.es" onmouseover="window.status='Correo Electr&oacute;nico con el Autor'; return true">Correo</a> </font></td>
+  </tr>
+</table>
+
+<layer src="http://www.spidersoft.com/ads/bwz468_60.htm" visibility=hidden id=a1 width=600 onload="moveToAbsolute(ad1.pageX,ad1.pageY); a1.clip.height=60;visibility='show';"></layer>
+</body>
+</html>
+<!-- Fin de la página ----------------------------------------------------------------------->

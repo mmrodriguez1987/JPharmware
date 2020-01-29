@@ -1,0 +1,107 @@
+--Crear usuarios de una BD
+sp_addlogin 'Admon','admin','SFCIFEMSA'
+sp_addsrvrolemember 'Admon',sysadmin
+sp_adduser 'Admon','Administrador'
+sp_addrolemember db_ddladmin,'Administrador'
+
+--Denegar privilegios
+revoke create table,create view, create function,create procedure to Vendedores
+
+--Otorgar privilegios
+grant select on clientes to Vendedores
+
+--Crear una tabla con llave Primaria
+create table cliente
+(
+Id_Cliente char(3) primary key not null,
+Nomb_Cliente nvarchar(30) not null,
+Direccion nvarchar(50) not null,
+Pais nvarchar(50) not null,
+SaldoInic money not null,
+SaldoAct money not null
+)
+
+--IDENTITY : Num_Pedido int identity(1,1) primary key,
+
+--Crear una tabla con llave Forania
+create table venta
+(
+Fecha datetime not null,
+Id_Cliente char(3) foreign key references cliente(Id_Cliente) not null,
+Id_Vendedor char(2) foreign key references vendedor(Id_Vendedor) not null,
+Id_Product char(4) foreign key references producto(Id_Product) not null,
+cantidad int not null
+)
+
+--Crear un Trigger
+create trigger Llame_pa_verte
+on Tabla_que_se_esta_insertando after insert
+as update Tabla_que_se_quiere_modificar set Campo_de_la_tabla_a_modificar = Lo que se va a hacer con el campo
+from inserted i,productos p
+where p.campo = i.campo
+
+--Un ejemplo de Trigger
+create trigger Actualizar_Inventario_FContado
+on Detalle_Factura_Contado
+after insert 
+as
+update Productos set existencia=existencia-(select cantidad from inserted)
+from inserted i,productos p
+where p.Cod_Producto=i.Cod_Producto
+
+--Crear una Función
+create function Calcular_Subtotal(@Cod_Producto nvarchar(15),
+@Cantidad smallint)
+returns money
+begin
+  declare @st as money
+  select @st=precio*@cantidad 
+  from productos
+  where Cod_Producto=@Cod_Producto
+  return @st
+end
+
+-- Sentencia para crear una regla que valide que un campo
+create rule credito 
+as
+@limite>0
+
+-- Sentencia para vincular la regla anterior al campo Limite_Credito
+sp_bindrule 'credito','clientes.Limite_Credito'
+
+--Crear un Precedimiento de actualización
+create procedure Actualizar_Factura_Contado
+@NFactura_Contado nvarchar(15)
+as
+declare @total as float
+set @total=(select sum(subtotal) from Detalle_Factura_Contado)
+update Factura_Contado set
+total=@total
+where NFactura_Contado=@NFactura_Contado
+
+--Crear un Precedimiento de inserción de datos
+create procedure Ingresar_Factura_Contado
+@NFactura_Contado nvarchar(15),
+@Fecha_Facturacion smalldatetime,
+@Cod_Cliente char(15),
+@Total money
+as
+insert into Factura_Contado values(@NFactura_Contado,getdate(),getdate()+30,@Cod_Cliente,@Total)
+
+--Crear un Precedimiento de eliminación de datos
+create procedure EliminarProducto 
+@Cod_producto int
+as
+delete from Producto where Cod_producto = @Cod_producto
+--Agregar un campo a una tabla
+alter table clientes add mora money
+
+--Agregar una llave primaria compuesta
+alter table Detalle_Factura_Credito add constraint
+PK_dfc primary key(Num_Factura,Cod_Producto)
+
+--Agregar una llave primaria
+Alter table Productos add constraint pk_producto primary key (Cod_Producto)
+
+--Agregar una llave Forania
+Alter table Detalle_Pedido add constraint fk_Cod_Producto foreign key(Cod_Producto) references Productos(Cod_Producto)
